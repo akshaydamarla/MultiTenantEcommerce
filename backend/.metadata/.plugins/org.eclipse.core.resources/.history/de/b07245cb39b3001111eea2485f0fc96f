@@ -1,0 +1,10 @@
+package soa.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import soa.entity.User;
+
+public interface UserRepository extends  JpaRepository<User, Long>
+{
+
+}

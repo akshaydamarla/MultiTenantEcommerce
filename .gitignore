@@ -1,0 +1,28 @@
+# Java / Spring Boot
+target/
+*.class
+*.log
+
+# Eclipse / Spring Tool Suite
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# Environment / secrets
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Node / React
+node_modules/
+dist/
+build/
+
+# IDE
+.idea/
+*.iml
