@@ -1,0 +1,35 @@
+package soa.controller;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import soa.dto.LoginRequest;
+import soa.entity.User;
+import soa.service.UserService;
+
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+	
+	UserService service;
+
+	public AuthController(UserService service) {
+		this.service = service;
+	}
+	
+	@PostMapping("/register")
+	public Object registerUser(@RequestBody User user) {
+		return service.registerUser(user);
+	}
+	
+	@PostMapping("/login")
+	public Object loginUser(@RequestBody LoginRequest loginRequest) {
+		return service.loginUser(loginRequest);
+	}
+	
+	
+
+}
