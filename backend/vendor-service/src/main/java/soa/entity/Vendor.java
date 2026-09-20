@@ -1,5 +1,6 @@
 package soa.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +17,15 @@ public class Vendor {
 	String name;
 	String email;
 	String contactNumber;
+	@Column(nullable = true)
+	long userId;
+	
+	public long getUserId() {
+	    return userId;
+	}
+	public void setUserId(Long userId) {
+	    this.userId = userId;
+	}
 	public long getVendorId() {
 		return vendorId;
 	}

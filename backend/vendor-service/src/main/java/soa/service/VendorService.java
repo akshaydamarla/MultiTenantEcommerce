@@ -14,7 +14,8 @@ public class VendorService {
 		this.repository = repository;
 	}
 	
-	public Object createVendor(Vendor vendor) {
+	public Object createVendor(Vendor vendor, long userId) {
+		vendor.setUserId(userId);
 		return repository.save(vendor);
 	}
 	
@@ -29,6 +30,11 @@ public class VendorService {
 	
 	public void deleteVendor(long id) {
 		repository.deleteById(id);
+	}
+	
+	public Object getVendorByUserId(Long userId) {
+	    return repository.findByUserId(userId)
+	            .orElseThrow(() -> new RuntimeException("Vendor not found!"));
 	}
 	
 

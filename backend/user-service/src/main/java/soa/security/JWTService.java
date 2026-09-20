@@ -19,15 +19,17 @@ public class JWTService {
 			SECRETKEY.getBytes(StandardCharsets.UTF_8)
 			);
 	
-	public String generateToken(String email, String role) {
-		return Jwts.builder()
-				.subject(email)
-				.claim("role", role)
-				.issuedAt(new Date())
-				.expiration(new Date(new Date().getTime()+864000))
-				.signWith(key)
-				.compact();
-				
+	public String generateToken(long userId, String email, String role) {
+	    return Jwts.builder()
+	            .subject(email)
+	            .claim("userId", userId)
+	            .claim("role", role)
+	            .issuedAt(new Date())
+	            .expiration(
+	                new Date(System.currentTimeMillis() + 1000 * 60 * 60)
+	            )
+	            .signWith(key)
+	            .compact();
 	}
 	
 	public Claims validateToken(String token) {

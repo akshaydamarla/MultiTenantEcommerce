@@ -1,7 +1,9 @@
 package soa.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
+import soa.dto.VendorResponse;
 import soa.entity.Product;
 import soa.repository.ProductRepository;
 
@@ -10,9 +12,12 @@ public class ProductService {
 	
 	ProductRepository productRepository;
 
-	public ProductService(ProductRepository productRepository) {
-		this.productRepository = productRepository;
+
+	public ProductService( ProductRepository productRepository) {
+
+	    this.productRepository = productRepository;
 	}
+
 	
 	public Object createProduct(Product p) {
 		return productRepository.save(p);

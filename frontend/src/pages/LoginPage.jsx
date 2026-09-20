@@ -1,12 +1,14 @@
 import { ArrowRight, Check, LayoutGrid, Store } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
+import api from '../services/api'
 
 const initialValues = {
   email: '',
   password: '',
   remember: false,
 }
+
 
 function validate(values) {
   const errors = {}
@@ -27,6 +29,7 @@ function validate(values) {
 function LoginPage() {
   const [values, setValues] = useState(initialValues)
   const [errors, setErrors] = useState({})
+  const [serverError, setServerError] = useState('')
 
   function handleChange(event) {
     const { name, type, value, checked } = event.target
@@ -44,11 +47,37 @@ function LoginPage() {
     setErrors((currentErrors) => ({ ...currentErrors, [fieldName]: fieldErrors[fieldName] }))
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    const nextErrors = validate(values)
-    setErrors(nextErrors)
-  }
+  async function handleSubmit(event) {
+      event.preventDefault()
+
+      const nextErrors = validate(values)
+      setErrors(nextErrors)
+      setServerError('')
+
+      if (Object.keys(nextErrors).length > 0) {
+        return
+      }
+
+      try {
+        const response = await api.post('/auth/login', {
+          email: values.email,
+          password: values.password,
+        })
+
+        console.log('Login successful:', response.data)
+
+        localStorage.setItem('token', response.data.token)
+        localStorage.setItem('role', response.data.role)
+
+        alert('Login successful!')
+      } catch (error) {
+        console.error('Login failed:', error)
+
+        setServerError(
+          error.response?.data?.message || 'Login failed. Please check your email and password.'
+        )
+      }
+}
 
   return (
     <section className="login-page" aria-labelledby="login-heading">
@@ -123,6 +152,12 @@ function LoginPage() {
             </label>
             <Link className="text-link" to="/forgot-password">Forgot Password?</Link>
           </div>
+
+          {serverError && (
+          <div className="form-error">
+          {serverError}
+          </div>
+          )}
 
           <button className="button button-primary login-submit" type="submit">Sign In</button>
         </form>

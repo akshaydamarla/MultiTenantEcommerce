@@ -1,5 +1,7 @@
 package soa.controller;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,8 +24,20 @@ public class VendorController {
 	}
 	
 	@PostMapping
-	public Object createVendor(@RequestBody Vendor vendor) {
-		return service.createVendor(vendor);
+	public Object createVendor(
+	        @RequestBody Vendor vendor,
+	        Authentication authentication) {
+
+	    JwtAuthenticationToken jwtAuth =
+	            (JwtAuthenticationToken) authentication;
+
+	    Long userId = ((Number) jwtAuth
+	            .getToken()
+	            .getClaims()
+	            .get("userId"))
+	            .longValue();
+
+	    return service.createVendor(vendor, userId);
 	}
 	
 	@GetMapping
@@ -40,6 +54,21 @@ public class VendorController {
 	public String deleteVendorById(@PathVariable long id) {
 		service.deleteVendor(id);
 		return "Vendor Deleted SuccessFully";
+	}
+	
+	@GetMapping("/me")
+	public Object getMyVendor(Authentication authentication) {
+
+	    JwtAuthenticationToken jwtAuth =
+	            (JwtAuthenticationToken) authentication;
+
+	    Long userId = ((Number) jwtAuth
+	            .getToken()
+	            .getClaims()
+	            .get("userId"))
+	            .longValue();
+
+	    return service.getVendorByUserId(userId);
 	}
 	
 	
