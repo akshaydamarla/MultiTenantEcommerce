@@ -1,175 +1,250 @@
-import { ArrowRight, Check, LayoutGrid, Store } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import api from '../services/api'
-
-const initialValues = {
-  email: '',
-  password: '',
-  remember: false,
-}
-
-
-function validate(values) {
-  const errors = {}
-
-  if (!values.email.trim()) {
-    errors.email = 'Email is required.'
-  } else if (!/^\S+@\S+\.\S+$/.test(values.email)) {
-    errors.email = 'Enter a valid email address.'
-  }
-
-  if (!values.password) {
-    errors.password = 'Password is required.'
-  }
-
-  return errors
-}
+import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
+import Logo from '../components/Logo'
+import {
+  loginUser,
+  saveAuthData,
+} from '../services/authService'
+import './LoginPage.css'
 
 function LoginPage() {
-  const [values, setValues] = useState(initialValues)
-  const [errors, setErrors] = useState({})
-  const [serverError, setServerError] = useState('')
+  const navigate = useNavigate()
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  })
+
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   function handleChange(event) {
-    const { name, type, value, checked } = event.target
-    const nextValues = { ...values, [name]: type === 'checkbox' ? checked : value }
+    const { name, value } = event.target
 
-    setValues(nextValues)
-    if (errors[name]) {
-      setErrors({ ...errors, ...validate(nextValues), [name]: validate(nextValues)[name] })
-    }
-  }
-
-  function handleBlur(event) {
-    const fieldErrors = validate(values)
-    const fieldName = event.target.name
-    setErrors((currentErrors) => ({ ...currentErrors, [fieldName]: fieldErrors[fieldName] }))
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }))
   }
 
   async function handleSubmit(event) {
-      event.preventDefault()
+    event.preventDefault()
 
-      const nextErrors = validate(values)
-      setErrors(nextErrors)
-      setServerError('')
+    setError('')
 
-      if (Object.keys(nextErrors).length > 0) {
-        return
-      }
+    if (!formData.email || !formData.password) {
+      setError('Please enter your email and password.')
+      return
+    }
 
-      try {
-        const response = await api.post('/auth/login', {
-          email: values.email,
-          password: values.password,
-        })
+    try {
+      setLoading(true)
 
-        console.log('Login successful:', response.data)
+      const authResponse = await loginUser(formData)
 
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('role', response.data.role)
+      saveAuthData(authResponse)
 
-        alert('Login successful!')
-      } catch (error) {
-        console.error('Login failed:', error)
+      redirectByRole(authResponse.role, navigate)
+    } catch (error) {
+      console.error('Login failed:', error)
 
-        setServerError(
-          error.response?.data?.message || 'Login failed. Please check your email and password.'
-        )
-      }
-}
+      setError(
+        error.response?.data?.message ||
+          'Invalid email or password.',
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <section className="login-page" aria-labelledby="login-heading">
-      <div className="login-intro">
-        <div className="login-brand-mark" aria-hidden="true">
-          <LayoutGrid size={28} strokeWidth={2} />
-        </div>
-        <p className="eyebrow">Welcome to</p>
-        <h1>MARKETGRID</h1>
-        <p className="login-tagline">One Marketplace. Multiple Vendors. Smarter Commerce.</p>
+    <main className="login-page">
+      <div className="login-container">
+        <LoginHeader />
 
-        <div className="marketplace-visual" aria-hidden="true">
-          <div className="marketplace-grid">
-            {Array.from({ length: 9 }, (_, index) => (
-              <span className={`marketplace-tile tile-${index + 1}`} key={index}>
-                {index === 4 && <Store size={20} strokeWidth={2} />}
-              </span>
-            ))}
-          </div>
-          <span className="visual-line visual-line-one" />
-          <span className="visual-line visual-line-two" />
-        </div>
+        <LoginForm
+          formData={formData}
+          showPassword={showPassword}
+          loading={loading}
+          error={error}
+          onChange={handleChange}
+          onTogglePassword={() =>
+            setShowPassword((current) => !current)
+          }
+          onSubmit={handleSubmit}
+        />
+
+        <RegistrationLinks />
       </div>
-
-      <div className="login-card card">
-        <div className="login-card-heading">
-          <p className="eyebrow">Account access</p>
-          <h2 id="login-heading">Sign in to MarketGrid</h2>
-          <p>Manage your marketplace activity from one place.</p>
-        </div>
-
-        <form className="login-form" noValidate onSubmit={handleSubmit}>
-          <div className="form-field">
-            <label htmlFor="email">Email</label>
-            <input
-              className={`input${errors.email ? ' input-error' : ''}`}
-              id="email"
-              name="email"
-              type="email"
-              value={values.email}
-              autoComplete="email"
-              aria-describedby={errors.email ? 'email-error' : undefined}
-              aria-invalid={Boolean(errors.email)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.email && <span className="form-error" id="email-error">{errors.email}</span>}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="password">Password</label>
-            <input
-              className={`input${errors.password ? ' input-error' : ''}`}
-              id="password"
-              name="password"
-              type="password"
-              value={values.password}
-              autoComplete="current-password"
-              aria-describedby={errors.password ? 'password-error' : undefined}
-              aria-invalid={Boolean(errors.password)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.password && <span className="form-error" id="password-error">{errors.password}</span>}
-          </div>
-
-          <div className="login-options">
-            <label className="remember-option">
-              <input name="remember" type="checkbox" checked={values.remember} onChange={handleChange} />
-              <span className="checkbox-icon" aria-hidden="true"><Check size={13} strokeWidth={3} /></span>
-              <span>Remember me</span>
-            </label>
-            <Link className="text-link" to="/forgot-password">Forgot Password?</Link>
-          </div>
-
-          {serverError && (
-          <div className="form-error">
-          {serverError}
-          </div>
-          )}
-
-          <button className="button button-primary login-submit" type="submit">Sign In</button>
-        </form>
-
-        <div className="login-card-footer">
-          <p>Don't have an account?</p>
-          <Link className="text-link" to="/register">Create Account <ArrowRight size={15} aria-hidden="true" /></Link>
-          <Link className="vendor-link" to="/vendor-register"><Store size={16} aria-hidden="true" /> Register as Vendor</Link>
-        </div>
-      </div>
-    </section>
+    </main>
   )
+}
+
+function LoginHeader() {
+  return (
+    <div className="login-header">
+      <Logo />
+
+      <h1>Welcome back</h1>
+
+      <p>
+        Sign in to continue to your MarketGrid account.
+      </p>
+    </div>
+  )
+}
+
+function LoginForm({
+  formData,
+  showPassword,
+  loading,
+  error,
+  onChange,
+  onTogglePassword,
+  onSubmit,
+}) {
+  return (
+    <form
+      className="login-form"
+      onSubmit={onSubmit}
+    >
+      <FormField
+        label="Email address"
+        name="email"
+        type="email"
+        value={formData.email}
+        placeholder="Enter your email"
+        onChange={onChange}
+      />
+
+      <PasswordField
+        value={formData.password}
+        showPassword={showPassword}
+        onChange={onChange}
+        onTogglePassword={onTogglePassword}
+      />
+
+      {error && (
+        <p className="login-error">
+          {error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        className="login-submit"
+        disabled={loading}
+      >
+        {loading ? 'Signing in...' : 'Sign in'}
+      </button>
+    </form>
+  )
+}
+
+function FormField({
+  label,
+  name,
+  type,
+  value,
+  placeholder,
+  onChange,
+}) {
+  return (
+    <label className="login-field">
+      <span>{label}</span>
+
+      <input
+        type={type}
+        name={name}
+        value={value}
+        placeholder={placeholder}
+        onChange={onChange}
+        autoComplete="email"
+      />
+    </label>
+  )
+}
+
+function PasswordField({
+  value,
+  showPassword,
+  onChange,
+  onTogglePassword,
+}) {
+  return (
+    <label className="login-field">
+      <span>Password</span>
+
+      <div className="password-input-wrapper">
+        <input
+          type={showPassword ? 'text' : 'password'}
+          name="password"
+          value={value}
+          placeholder="Enter your password"
+          onChange={onChange}
+          autoComplete="current-password"
+        />
+
+        <button
+          type="button"
+          className="password-toggle"
+          onClick={onTogglePassword}
+          aria-label={
+            showPassword
+              ? 'Hide password'
+              : 'Show password'
+          }
+        >
+          {showPassword ? (
+            <EyeOff size={18} />
+          ) : (
+            <Eye size={18} />
+          )}
+        </button>
+      </div>
+    </label>
+  )
+}
+
+function RegistrationLinks() {
+  return (
+    <div className="registration-links">
+      <p>
+        Don't have an account?
+      </p>
+
+      <div>
+        <Link to="/register">
+          Create customer account
+        </Link>
+
+        <Link to="/vendor-register">
+          Register as a vendor
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function redirectByRole(role, navigate) {
+  switch (role) {
+    case 'CUSTOMER':
+      navigate('/customer')
+      break
+
+    case 'VENDOR':
+      navigate('/vendor')
+      break
+
+    case 'ADMIN':
+      navigate('/admin')
+      break
+
+    default:
+      navigate('/')
+  }
 }
 
 export default LoginPage

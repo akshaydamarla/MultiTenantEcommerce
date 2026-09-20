@@ -17,7 +17,7 @@ public class Vendor {
 	String name;
 	String email;
 	String contactNumber;
-	@Column(nullable = true)
+	@Column(nullable = false)
 	long userId;
 	
 	public long getUserId() {

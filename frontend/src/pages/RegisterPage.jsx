@@ -1,183 +1,338 @@
-import { ArrowRight, LayoutGrid } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import { useState } from 'react'
-
-const initialValues = {
-  fullName: '',
-  email: '',
-  phone: '',
-  password: '',
-  confirmPassword: '',
-}
-
-function validate(values) {
-  const errors = {}
-
-  if (!values.fullName.trim()) {
-    errors.fullName = 'Full name is required.'
-  }
-
-  if (!values.email.trim()) {
-    errors.email = 'Email is required.'
-  } else if (!/^\S+@\S+\.\S+$/.test(values.email)) {
-    errors.email = 'Enter a valid email address.'
-  }
-
-  if (!values.phone.trim()) {
-    errors.phone = 'Phone number is required.'
-  } else if (!/^\+?[\d\s()-]+$/.test(values.phone.trim()) || values.phone.replace(/\D/g, '').length < 7) {
-    errors.phone = 'Enter a valid phone number.'
-  }
-
-  if (!values.password) {
-    errors.password = 'Password is required.'
-  } else if (values.password.length < 8) {
-    errors.password = 'Password must be at least 8 characters.'
-  }
-
-  if (!values.confirmPassword) {
-    errors.confirmPassword = 'Please confirm your password.'
-  } else if (values.confirmPassword !== values.password) {
-    errors.confirmPassword = 'Passwords do not match.'
-  }
-
-  return errors
-}
+import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
+import Logo from '../components/Logo'
+import { registerUser } from '../services/authService'
+import './RegisterPage.css'
 
 function RegisterPage() {
-  const [values, setValues] = useState(initialValues)
-  const [errors, setErrors] = useState({})
+  const navigate = useNavigate()
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false)
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   function handleChange(event) {
     const { name, value } = event.target
-    const nextValues = { ...values, [name]: value }
 
-    setValues(nextValues)
-    if (errors[name]) {
-      const nextErrors = validate(nextValues)
-      setErrors((currentErrors) => ({ ...currentErrors, [name]: nextErrors[name] }))
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+    }))
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    setError('')
+    setSuccess('')
+
+    const validationError =
+      validateRegistrationForm(formData)
+
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      const userData = createCustomerPayload(formData)
+
+      await registerUser(userData)
+
+      setSuccess(
+        'Account created successfully. Redirecting to login...',
+      )
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 1200)
+    } catch (error) {
+      console.error(
+        'Registration failed:',
+        error,
+      )
+
+      setError(
+        error.response?.data?.message ||
+          error.response?.data ||
+          'Unable to create your account. Please try again.',
+      )
+    } finally {
+      setLoading(false)
     }
   }
 
-  function handleBlur(event) {
-    const fieldName = event.target.name
-    const fieldErrors = validate(values)
-    setErrors((currentErrors) => ({ ...currentErrors, [fieldName]: fieldErrors[fieldName] }))
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    setErrors(validate(values))
-  }
-
   return (
-    <section className="register-page" aria-labelledby="register-heading">
-      <div className="register-card card">
-        <div className="register-card-heading">
-          <div className="register-brand-mark" aria-hidden="true">
-            <LayoutGrid size={22} strokeWidth={2} />
-          </div>
-          <p className="eyebrow">Join MarketGrid</p>
-          <h1 id="register-heading">Create your account</h1>
-          <p>Start shopping from multiple vendors in one place.</p>
-        </div>
+    <main className="register-page">
+      <div className="register-container">
+        <RegisterHeader />
 
-        <form className="register-form" noValidate onSubmit={handleSubmit}>
-          <div className="form-field">
-            <label htmlFor="fullName">Full Name</label>
-            <input
-              className={`input${errors.fullName ? ' input-error' : ''}`}
-              id="fullName"
-              name="fullName"
-              type="text"
-              value={values.fullName}
-              autoComplete="name"
-              aria-describedby={errors.fullName ? 'fullName-error' : undefined}
-              aria-invalid={Boolean(errors.fullName)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.fullName && <span className="form-error" id="fullName-error">{errors.fullName}</span>}
-          </div>
+        <RegisterForm
+          formData={formData}
+          showPassword={showPassword}
+          showConfirmPassword={showConfirmPassword}
+          loading={loading}
+          error={error}
+          success={success}
+          onChange={handleChange}
+          onTogglePassword={() =>
+            setShowPassword((current) => !current)
+          }
+          onToggleConfirmPassword={() =>
+            setShowConfirmPassword(
+              (current) => !current,
+            )
+          }
+          onSubmit={handleSubmit}
+        />
 
-          <div className="form-field">
-            <label htmlFor="register-email">Email</label>
-            <input
-              className={`input${errors.email ? ' input-error' : ''}`}
-              id="register-email"
-              name="email"
-              type="email"
-              value={values.email}
-              autoComplete="email"
-              aria-describedby={errors.email ? 'register-email-error' : undefined}
-              aria-invalid={Boolean(errors.email)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.email && <span className="form-error" id="register-email-error">{errors.email}</span>}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="phone">Phone Number</label>
-            <input
-              className={`input${errors.phone ? ' input-error' : ''}`}
-              id="phone"
-              name="phone"
-              type="tel"
-              value={values.phone}
-              autoComplete="tel"
-              aria-describedby={errors.phone ? 'phone-error' : undefined}
-              aria-invalid={Boolean(errors.phone)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.phone && <span className="form-error" id="phone-error">{errors.phone}</span>}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="register-password">Password</label>
-            <input
-              className={`input${errors.password ? ' input-error' : ''}`}
-              id="register-password"
-              name="password"
-              type="password"
-              value={values.password}
-              autoComplete="new-password"
-              aria-describedby={errors.password ? 'register-password-error' : undefined}
-              aria-invalid={Boolean(errors.password)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.password && <span className="form-error" id="register-password-error">{errors.password}</span>}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              className={`input${errors.confirmPassword ? ' input-error' : ''}`}
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              value={values.confirmPassword}
-              autoComplete="new-password"
-              aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
-              aria-invalid={Boolean(errors.confirmPassword)}
-              onBlur={handleBlur}
-              onChange={handleChange}
-            />
-            {errors.confirmPassword && <span className="form-error" id="confirmPassword-error">{errors.confirmPassword}</span>}
-          </div>
-
-          <button className="button button-primary register-submit" type="submit">Create Account</button>
-        </form>
-
-        <div className="register-card-footer">
-          <p>Already have an account?</p>
-          <Link className="text-link" to="/login">Sign In <ArrowRight size={15} aria-hidden="true" /></Link>
-        </div>
+        <LoginLink />
       </div>
-    </section>
+    </main>
   )
+}
+
+function RegisterHeader() {
+  return (
+    <div className="register-header">
+      <Logo />
+
+      <h1>Create your account</h1>
+
+      <p>
+        Join MarketGrid and start shopping from
+        multiple vendors.
+      </p>
+    </div>
+  )
+}
+
+function RegisterForm({
+  formData,
+  showPassword,
+  showConfirmPassword,
+  loading,
+  error,
+  success,
+  onChange,
+  onTogglePassword,
+  onToggleConfirmPassword,
+  onSubmit,
+}) {
+  return (
+    <form
+      className="register-form"
+      onSubmit={onSubmit}
+    >
+      <div className="register-name-row">
+        <FormField
+          label="First name"
+          name="firstName"
+          value={formData.firstName}
+          placeholder="First name"
+          onChange={onChange}
+        />
+
+        <FormField
+          label="Last name"
+          name="lastName"
+          value={formData.lastName}
+          placeholder="Last name"
+          onChange={onChange}
+        />
+      </div>
+
+      <FormField
+        label="Email address"
+        name="email"
+        type="email"
+        value={formData.email}
+        placeholder="Enter your email"
+        onChange={onChange}
+      />
+
+      <PasswordField
+        label="Password"
+        name="password"
+        value={formData.password}
+        placeholder="Create a password"
+        showPassword={showPassword}
+        onChange={onChange}
+        onTogglePassword={onTogglePassword}
+      />
+
+      <PasswordField
+        label="Confirm password"
+        name="confirmPassword"
+        value={formData.confirmPassword}
+        placeholder="Confirm your password"
+        showPassword={showConfirmPassword}
+        onChange={onChange}
+        onTogglePassword={onToggleConfirmPassword}
+      />
+
+      {error && (
+        <p className="register-message register-error">
+          {error}
+        </p>
+      )}
+
+      {success && (
+        <p className="register-message register-success">
+          {success}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        className="register-submit"
+        disabled={loading}
+      >
+        {loading
+          ? 'Creating account...'
+          : 'Create account'}
+      </button>
+    </form>
+  )
+}
+
+function FormField({
+  label,
+  name,
+  type = 'text',
+  value,
+  placeholder,
+  onChange,
+}) {
+  return (
+    <label className="register-field">
+      <span>{label}</span>
+
+      <input
+        type={type}
+        name={name}
+        value={value}
+        placeholder={placeholder}
+        onChange={onChange}
+        autoComplete={
+          name === 'email'
+            ? 'email'
+            : 'off'
+        }
+      />
+    </label>
+  )
+}
+
+function PasswordField({
+  label,
+  name,
+  value,
+  placeholder,
+  showPassword,
+  onChange,
+  onTogglePassword,
+}) {
+  return (
+    <label className="register-field">
+      <span>{label}</span>
+
+      <div className="register-password-wrapper">
+        <input
+          type={
+            showPassword
+              ? 'text'
+              : 'password'
+          }
+          name={name}
+          value={value}
+          placeholder={placeholder}
+          onChange={onChange}
+          autoComplete={
+            name === 'password'
+              ? 'new-password'
+              : 'new-password'
+          }
+        />
+
+        <button
+          type="button"
+          className="register-password-toggle"
+          onClick={onTogglePassword}
+          aria-label={
+            showPassword
+              ? 'Hide password'
+              : 'Show password'
+          }
+        >
+          {showPassword ? (
+            <EyeOff size={18} />
+          ) : (
+            <Eye size={18} />
+          )}
+        </button>
+      </div>
+    </label>
+  )
+}
+
+function LoginLink() {
+  return (
+    <div className="register-login-link">
+      <span>Already have an account?</span>{' '}
+      <Link to="/login">Sign in</Link>
+    </div>
+  )
+}
+
+function validateRegistrationForm(formData) {
+  if (
+    !formData.firstName.trim() ||
+    !formData.lastName.trim()
+  ) {
+    return 'Please enter your first and last name.'
+  }
+
+  if (!formData.email.trim()) {
+    return 'Please enter your email address.'
+  }
+
+  if (formData.password.length < 6) {
+    return 'Password must contain at least 6 characters.'
+  }
+
+  if (
+    formData.password !==
+    formData.confirmPassword
+  ) {
+    return 'Passwords do not match.'
+  }
+
+  return ''
+}
+
+function createCustomerPayload(formData) {
+  return {
+    name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+    email: formData.email.trim(),
+    password: formData.password,
+    role: 'CUSTOMER',
+  }
 }
 
 export default RegisterPage

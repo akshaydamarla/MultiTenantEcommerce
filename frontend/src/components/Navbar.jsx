@@ -1,53 +1,99 @@
-import { LayoutGrid, Menu, Search, ShoppingCart, UserRound, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { LogOut, Search, ShoppingCart } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import Logo from './Logo'
+import {
+  getUserName,
+  logoutUser,
+} from '../services/authService'
+import './Navbar.css'
 
 function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate()
+  const userName = getUserName()
 
-  function closeMenu() {
-    setMenuOpen(false)
+  function handleLogout() {
+    logoutUser()
+    navigate('/login')
   }
 
   return (
     <header className="navbar">
-      <div className="container navbar-inner">
-        <Link className="brand" to="/customer" aria-label="MarketGrid home" onClick={closeMenu}>
-          <span className="brand-mark"><LayoutGrid size={18} strokeWidth={2.5} /></span>
-          <span><strong>MARKETGRID</strong></span>
-        </Link>
+      <div className="navbar-container">
+        <Logo />
 
-        <form className="navbar-search" role="search" onSubmit={(event) => event.preventDefault()}>
-          <Search size={17} aria-hidden="true" />
-          <input className="navbar-search-input" type="search" placeholder="Search Products..." aria-label="Search products" />
-        </form>
+        <SearchBar />
 
-        <button
-          className="navbar-menu-toggle"
-          type="button"
-          aria-expanded={menuOpen}
-          aria-controls="main-navigation"
-          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          onClick={() => setMenuOpen((isOpen) => !isOpen)}
-        >
-          {menuOpen ? <X size={21} /> : <Menu size={21} />}
-        </button>
-
-        <nav id="main-navigation" className={`navbar-links${menuOpen ? ' is-open' : ''}`} aria-label="Main navigation">
-          <Link className="navbar-link" to="/customer/orders" onClick={closeMenu}>
-            <span>Orders</span>
-          </Link>
-          <Link className="navbar-link" to="/customer/cart" onClick={closeMenu}>
-            <ShoppingCart size={17} aria-hidden="true" />
-            <span>Cart</span>
-          </Link>
-          <Link className="navbar-link navbar-profile" to="/login" onClick={closeMenu}>
-            <UserRound size={17} aria-hidden="true" />
-            <span>Login / Profile</span>
-          </Link>
-        </nav>
+        <NavigationLinks
+          userName={userName}
+          onLogout={handleLogout}
+        />
       </div>
     </header>
+  )
+}
+
+function SearchBar() {
+  return (
+    <div className="navbar-search">
+      <Search size={18} />
+
+      <input
+        type="search"
+        placeholder="Search products..."
+        aria-label="Search products"
+      />
+    </div>
+  )
+}
+
+function NavigationLinks({
+  userName,
+  onLogout,
+}) {
+  return (
+    <nav className="navbar-links">
+      <Link to="/orders">
+        Orders
+      </Link>
+
+      <Link to="/cart">
+        <ShoppingCart size={18} />
+        <span>Cart</span>
+      </Link>
+
+      {userName ? (
+        <LoggedInUser
+          userName={userName}
+          onLogout={onLogout}
+        />
+      ) : (
+        <Link to="/login">
+          Login
+        </Link>
+      )}
+    </nav>
+  )
+}
+
+function LoggedInUser({
+  userName,
+  onLogout,
+}) {
+  return (
+    <div className="navbar-user">
+      <span className="navbar-user-name">
+        Hi, {userName}
+      </span>
+
+      <button
+        type="button"
+        className="navbar-logout"
+        onClick={onLogout}
+      >
+        <LogOut size={16} />
+        <span>Logout</span>
+      </button>
+    </div>
   )
 }
 

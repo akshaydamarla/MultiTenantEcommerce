@@ -38,9 +38,18 @@ public class UserService {
 			throw new RuntimeException("Invalid Password!");
 		}
 		
-		String token = jwt.generateToken(u.getId(),u.getEmail(), u.getRole());
+		String token = jwt.generateToken(
+		        u.getId(),
+		        u.getEmail(),
+		        u.getRole()
+		);
 		
-		return new AuthResponse(token, u.getRole(), "Login Successfull!");
+		return new AuthResponse(
+		        token,
+		        u.getRole(),
+		        u.getName(),
+		        "Login Successful"
+		);
 	}
 	
 

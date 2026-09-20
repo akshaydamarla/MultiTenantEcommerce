@@ -2,27 +2,21 @@ package soa.dto;
 
 public class VendorResponse {
 
-    private Long vendorId;
-    private Long userId;
+    private long vendorId;
     private String name;
     private String email;
     private String contactNumber;
+    private long userId;
 
-    public Long getVendorId() {
+
+    public long getVendorId() {
         return vendorId;
     }
 
-    public void setVendorId(Long vendorId) {
+    public void setVendorId(long vendorId) {
         this.vendorId = vendorId;
     }
 
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
 
     public String getName() {
         return name;
@@ -32,6 +26,7 @@ public class VendorResponse {
         this.name = name;
     }
 
+
     public String getEmail() {
         return email;
     }
@@ -40,11 +35,21 @@ public class VendorResponse {
         this.email = email;
     }
 
+
     public String getContactNumber() {
         return contactNumber;
     }
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
+    }
+
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
     }
 }

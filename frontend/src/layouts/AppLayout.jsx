@@ -1,15 +1,14 @@
 import { Outlet } from 'react-router-dom'
-import Footer from '../components/Footer'
 import Navbar from '../components/Navbar'
 
 function AppLayout() {
   return (
-    <div className="app-shell">
+    <div className="app-layout">
       <Navbar />
-      <main className="app-main">
+
+      <main className="page-content">
         <Outlet />
       </main>
-      <Footer />
     </div>
   )
 }

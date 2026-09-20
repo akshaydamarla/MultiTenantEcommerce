@@ -1,0 +1,42 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #15213a;
+  text-decoration: none;
+
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 6px);
+  grid-template-rows: repeat(2, 6px);
+  place-content: center;
+  gap: 4px;
+
+  border-radius: 8px;
+  background: #2864e9;
+}
+
+.logo-mark span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.logo-text {
+  color: #15213a;
+
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
