@@ -4,6 +4,8 @@ import HomePage from '../pages/HomePage'
 import ProductsPage from '../pages/ProductsPage'
 import LoginPage from '../pages/LoginPage'
 import RegisterPage from '../pages/RegisterPage'
+import VendorRegisterPage from '../pages/VendorRegisterPage'
+import VendorDashboardPage from '../pages/VendorDashboardPage'
 
 function AppRouter() {
   return (
@@ -25,9 +27,19 @@ function AppRouter() {
         />
 
         <Route
-        path="/register"
-        element={<RegisterPage />}
-      />
+          path="/register"
+          element={<RegisterPage />}
+        />
+
+        <Route
+          path="/vendor-register"
+          element={<VendorRegisterPage />}
+        />
+
+        <Route
+          path="/vendor"
+          element={<VendorDashboardPage />}
+        />
 
         <Route
           path="*"

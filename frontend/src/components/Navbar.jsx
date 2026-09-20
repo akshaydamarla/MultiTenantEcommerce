@@ -2,6 +2,7 @@ import { LogOut, Search, ShoppingCart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 import {
+  getRole,
   getUserName,
   logoutUser,
 } from '../services/authService'
@@ -9,7 +10,9 @@ import './Navbar.css'
 
 function Navbar() {
   const navigate = useNavigate()
+
   const userName = getUserName()
+  const role = getRole()
 
   function handleLogout() {
     logoutUser()
@@ -25,6 +28,7 @@ function Navbar() {
 
         <NavigationLinks
           userName={userName}
+          role={role}
           onLogout={handleLogout}
         />
       </div>
@@ -48,12 +52,25 @@ function SearchBar() {
 
 function NavigationLinks({
   userName,
+  role,
   onLogout,
 }) {
   return (
     <nav className="navbar-links">
-      <Link to="/orders">
-        Orders
+      {role === 'VENDOR' && (
+        <Link to="/vendor">
+          Dashboard
+        </Link>
+      )}
+
+      {role === 'CUSTOMER' && (
+        <Link to="/orders">
+          Orders
+        </Link>
+      )}
+
+      <Link to="/products">
+        Products
       </Link>
 
       <Link to="/cart">
