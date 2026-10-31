@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import soa.client.ProductClient;
 import soa.dto.OrderItemRequest;
@@ -33,6 +34,7 @@ public class OrderService {
     }
 
 
+    @Transactional
     public Object createOrder(
             OrderRequest orderRequest,
             long userId,
@@ -102,6 +104,12 @@ public class OrderService {
 
 
             orderItemRepository.save(orderItem);
+            
+            productClient.decreaseStock(
+                    product.getProductId(),
+                    itemRequest.getQuantity(),
+                    authorizationHeader
+            );
         }
 
 

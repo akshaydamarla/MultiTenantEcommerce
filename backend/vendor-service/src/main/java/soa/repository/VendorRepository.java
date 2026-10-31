@@ -9,4 +9,5 @@ import soa.entity.Vendor;
 public interface VendorRepository extends JpaRepository<Vendor, Long>
 {
 	Optional<Vendor> findByUserId(long userId);
+	boolean existsByUserId(Long userId);
 }

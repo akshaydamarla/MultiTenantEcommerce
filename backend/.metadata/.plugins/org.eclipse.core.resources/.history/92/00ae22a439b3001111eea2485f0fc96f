@@ -1,5 +1,0 @@
-package soa.repository;
-
-public interface UserRepository {
-
-}

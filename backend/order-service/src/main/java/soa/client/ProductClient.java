@@ -55,4 +55,47 @@ public class ProductClient {
                 .retrieve()
                 .body(ProductResponse.class);
     }
+    
+    
+    public void decreaseStock(
+            long productId,
+            int quantity,
+            String authorizationHeader) {
+
+        List<org.springframework.cloud.client.ServiceInstance>
+                instances =
+                discoveryClient.getInstances("PRODUCT-SERVICE");
+
+        if (instances.isEmpty()) {
+            throw new RuntimeException(
+                    "Product Service is not available"
+            );
+        }
+
+        var instance = instances.get(0);
+
+        String url =
+                "http://" +
+                instance.getHost() +
+                ":" +
+                instance.getPort() +
+                "/products/" +
+                productId +
+                "/stock";
+
+        restClient.patch()
+                .uri(url)
+                .header(
+                    "Authorization",
+                    authorizationHeader
+                )
+                .body(
+                    java.util.Map.of(
+                        "quantity",
+                        quantity
+                    )
+                )
+                .retrieve()
+                .toBodilessEntity();
+    }
 }

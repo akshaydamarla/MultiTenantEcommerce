@@ -1,5 +1,0 @@
-package soa.dto;
-
-public class LoginRequest {
-
-}

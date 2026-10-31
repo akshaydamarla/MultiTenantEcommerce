@@ -15,6 +15,11 @@ public class VendorService {
 	}
 	
 	public Object createVendor(Vendor vendor, long userId) {
+		if (repository.existsByUserId(userId)) {
+
+	        throw new RuntimeException("User already has a vendor profile!");
+
+	    }
 		vendor.setUserId(userId);
 		return repository.save(vendor);
 	}

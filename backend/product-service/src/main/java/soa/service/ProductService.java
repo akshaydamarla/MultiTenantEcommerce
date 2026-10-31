@@ -3,6 +3,8 @@ package soa.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import soa.dto.StockUpdateRequest;
 
 import soa.client.VendorClient;
 import soa.dto.VendorResponse;
@@ -112,5 +114,38 @@ public class ProductService {
         }
 
         productRepository.delete(product);
+    }
+    
+    @Transactional
+    public void decreaseStock(
+            long productId,
+            int quantity) {
+
+        if (quantity <= 0) {
+            throw new RuntimeException(
+                    "Quantity must be greater than zero"
+            );
+        }
+
+        Product product =
+                productRepository.findById(productId)
+                .orElseThrow(
+                    () -> new RuntimeException(
+                        "Product not Found!!"
+                    )
+                );
+
+        if (product.getStockQuantity() < quantity) {
+            throw new RuntimeException(
+                    "Insufficient stock for product: "
+                    + product.getName()
+            );
+        }
+
+        product.setStockQuantity(
+                product.getStockQuantity() - quantity
+        );
+
+        productRepository.save(product);
     }
 }
